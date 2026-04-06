@@ -359,7 +359,7 @@ async def server_loop(ctx : Context, address = None):
         logging.error('Connection refused by the multiworld server')
     except (OSError, websockets.InvalidURI):
         logging.error('Failed to connect to the multiworld server')
-    except Exception as e
+    except Exception as e:
         logging.error('Lost connection to the multiworld server, type /connect to reconnect')
         ctx.synced.clear()
         if not isinstance(e, websockets.WebSocketException):
