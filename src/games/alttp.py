@@ -228,7 +228,7 @@ ramItems = [
   RAM_U8    (0xF46E, name="Highest Armor"),
 
   RAM_Bits  (0xF3C9, names=["Hobo gave bottle", "Vendor gave bottle", "Flute boy became tree", "Thief's chest opened", "Smith saved", "Smiths have your sword"])
-  ] + reduce (lambda a, b: a + b, [makeChestItem(i) for i in range(0, 295)])
+  ] + reduce (lambda a, b: a + b, [makeChestItem(i) for i in range(0, 295)]) \
     + [makeOverworldEvent(i) for i in range(0, 128)]
 
 # inventory = [
