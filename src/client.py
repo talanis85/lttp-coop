@@ -529,13 +529,16 @@ async def console_loop(ctx : Context):
         if command[0] == '/update':
             address = int(command[1], 16)
             value = int(command[2], 16)
-            ayncio.create_task(send_msgs(ctx.socket, [['Update', address, value]]))
+            await send_msgs(ctx.socket, [['Update', address, value]])
+        if command[0] == '/sync':
+            await send_msgs(ctx.socket, [['Sync']])
         if command[0][:1] != '/':
-            asyncio.create_task(send_msgs(ctx.socket, [['Say', input]]))
+            await send_msgs(ctx.socket, [['Say', input]])
 
         await snes_flush_writes(ctx)
 
 async def track_ram(ctx : Context):
+    # wait for snes connection!
     async with ctx.game_lock:
         rambuffer = await snes_read(ctx, WRAM_START + ctx.game.minram, (ctx.game.maxram - ctx.game.minram))
 
