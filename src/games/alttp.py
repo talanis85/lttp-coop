@@ -94,7 +94,17 @@ def clamp(a, b):
   return f
 
 def receiveBottle(readRAM, writeRAM, new, old):
-  return zeroChange(readRAM, writeRAM, new, old) 
+  # Dont remove existing bottles but sync the contents
+  if new < 2:
+    return old
+  return new
+
+def receiveSelectedBottle(readRAM, writeRAM, new, old):
+  # Set this to >0 when you receive your first bottle
+  if old == 0:
+    return new
+  else:
+    return old
 
 def makeChestItem(i):
   a = RAM_Bits(0xF000 + i*2, names=[
@@ -120,6 +130,18 @@ def makeChestItem(i):
     ])
   return [a,b]
 
+def makeOverworldEvent(i):
+  return RAM_Bits(0xF280 + i, names=[
+    "unused - Overworld Area %d" % i,
+    "Overlay 2 - Overworld Area %d" % i,
+    "unused - Overworld Area %d" % i,
+    "unused - Overworld Area %d" % i,
+    "unused - Overworld Area %d" % i,
+    "Overlay 1 - Overworld Area %d" % i,
+    "Item collected - Overworld Area %d" % i,
+    "unused - Overworld Area %d" % i
+    ])
+
 ramItems = [
   # RAM_U8    (0x0010, name="Triforce Scene", onreceive=receiveTriforce),
   RAM_Bits  (0xF38C, names=["Bird", "Flute", "Shovel", "unknown item", "Magic Powder", "Mushroom", "Red Boomerang", "Blue Boomerang"]),
@@ -141,7 +163,7 @@ ramItems = [
   RAM_U8    (0xF34C, name="Shovel/Flute", onreceive=receiveShovelFlute),
   RAM_Bool  (0xF34D, name="Bug Net"),
   RAM_Bool  (0xF34E, name="Book of Mudora"),
-  RAM_U8    (0xF34F, name="Selected Bottle", onreceive=zeroChange),
+  RAM_U8    (0xF34F, name="Selected Bottle", onreceive=receiveSelectedBottle),
   RAM_Bool  (0xF350, name="Cane of Somaria"),
   RAM_Bool  (0xF351, name="Cane of Byrna"),
   RAM_Bool  (0xF352, name="Magic Cape"),
@@ -184,21 +206,30 @@ ramItems = [
   RAM_U8    (0xF388, name="Turtle Rock Key", onreceive=receiveKey(0xF388)),
   RAM_U8    (0xF389, name="Ganon's Tower Key", onreceive=receiveKey(0xF389)),
 
-	RAM_U16   (0xF360, name="Rupees", onreceive=clamp(0, 9999)),
+  RAM_U16   (0xF360, name="Rupees", onreceive=clamp(0, 9999)),
   RAM_U8    (0xF36B, name="Heart Pieces", onreceive=lambda readRAM, writeRAM, new, old: new % 4),
-	RAM_U8    (0xF36C, name="HP max", onreceive=clamp(0, 0xF0)),
+  RAM_U8    (0xF36C, name="HP max", onreceive=clamp(0, 0xF0)),
 
-	# item counts in dungeons. not really accurate because of chests that can be opened
-	# multiple times. does not work at all with key drop shuffle.
-	RAM_U8    (0xF434, name="Dungeon Item Count Byte 0"),
-	RAM_U8    (0xF435, name="Dungeon Item Count Byte 1"),
-	RAM_U8    (0xF436, name="Dungeon Item Count Byte 2"),
-	RAM_U8    (0xF437, name="Dungeon Item Count Byte 3"),
-	RAM_U8    (0xF438, name="Dungeon Item Count Byte 4"),
-	RAM_U8    (0xF439, name="Dungeon Item Count Byte 5"),
+  # (completely wrong??)
+  # # item counts in dungeons. not really accurate because of chests that can be opened
+  # # multiple times. does not work at all with key drop shuffle.
+  # RAM_U8    (0xF434, name="Dungeon Item Count Byte 0"),
+  # RAM_U8    (0xF435, name="Dungeon Item Count Byte 1"),
+  # RAM_U8    (0xF436, name="Dungeon Item Count Byte 2"),
+  # RAM_U8    (0xF437, name="Dungeon Item Count Byte 3"),
+  # RAM_U8    (0xF438, name="Dungeon Item Count Byte 4"),
+  # RAM_U8    (0xF439, name="Dungeon Item Count Byte 5"),
+
+  # Rando stuff
+  RAM_U8    (0xF429, name="Pendant Counter"),
+  RAM_U8    (0xF476, name="Crystal Counter"),
+  RAM_U8    (0xF417, name="Highest Sword"),
+  RAM_U8    (0xF422, name="Highest Shield"),
+  RAM_U8    (0xF46E, name="Highest Armor"),
 
   RAM_Bits  (0xF3C9, names=["Hobo gave bottle", "Vendor gave bottle", "Flute boy became tree", "Thief's chest opened", "Smith saved", "Smiths have your sword"])
   ] + reduce (lambda a, b: a + b, [makeChestItem(i) for i in range(0, 295)])
+    + [makeOverworldEvent(i) for i in range(0, 128)]
 
 # inventory = [
 #   0xF
